@@ -61,7 +61,6 @@ func drawBox(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, text string)
 
 func main() {
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
-	boxStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorPurple)
 
 	// Initialize screen
 	s, err := tcell.NewScreen()
@@ -77,8 +76,12 @@ func main() {
 	s.Clear()
 
 	// Draw initial boxes
-	drawBox(s, 1, 1, 42, 7, boxStyle, "Click and drag to draw a box")
-	drawBox(s, 5, 9, 32, 14, boxStyle, "Press C to reset")
+	i := 0
+	names := []string{}
+	for n := range tcell.ColorNames {
+		names = append(names, n)
+	}
+	drawLines(s, names, i)
 
 	// Event loop
 	quit := func() {
@@ -101,9 +104,24 @@ func main() {
 				quit()
 			} else if ev.Key() == tcell.KeyCtrlL {
 				s.Sync()
+			} else if ev.Rune() == ' ' {
+				s.Clear()
+				drawLines(s, names, i)
+				i++
+				s.Sync()
 			} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
 				s.Clear()
 			}
 		}
+	}
+}
+
+func drawLines(s tcell.Screen, names []string, startIndex int) {
+	i := startIndex
+	for _, colorName := range names[startIndex:] {
+		colorValue := tcell.ColorNames[colorName]
+		drawText(s, 0, i-startIndex, 19, i-startIndex, tcell.StyleDefault.Foreground(colorValue).Background(tcell.ColorReset), colorName)
+		drawText(s, 20, i-startIndex, 39, i-startIndex, tcell.StyleDefault.Foreground(tcell.ColorReset).Background(colorValue), colorName)
+		i++
 	}
 }
